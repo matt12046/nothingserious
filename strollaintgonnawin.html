@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Has Lance Stroll Won An F1 Race?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --amr-green: #00665e;
+            --amr-lime: #cedc00;
+        }
+        body {
+            background-color: var(--amr-green);
+            color: white;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .text-lime {
+            color: var(--amr-lime);
+        }
+        .bg-lime {
+            background-color: var(--amr-lime);
+        }
+        
+        /* Shake Animation for the button */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+        .shake-active {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+
+    <div class="max-w-2xl w-full flex flex-col items-center space-y-8">
+        
+        <h2 class="text-xl md:text-3xl font-light uppercase tracking-widest text-gray-200">
+            Has Lance Stroll won an F1 race?
+        </h2>
+
+        <!-- The Big Answer -->
+        <h1 id="answer" class="text-9xl md:text-[12rem] font-black tracking-tighter drop-shadow-2xl text-lime leading-none">
+            NO.
+        </h1>
+
+        <!-- Context & Stats -->
+        <div class="space-y-4 mt-8 bg-white/10 p-6 md:p-8 rounded-2xl backdrop-blur-sm shadow-xl w-full max-w-md border border-white/20">
+            <p class="text-lg md:text-xl font-medium">
+                As of the 2026 season, Lance Stroll has exactly <span class="font-bold text-lime">0</span> Grand Prix victories.
+            </p>
+            <div class="h-px w-full bg-white/20 my-4"></div>
+            <p class="text-sm md:text-base text-gray-300">
+                However, in his 190+ race starts, he has achieved:
+            </p>
+            <ul class="text-left w-max mx-auto space-y-2 text-sm md:text-base font-semibold">
+                <li class="flex items-center gap-2">🏆 3 Podiums</li>
+                <li class="flex items-center gap-2">⏱️ 1 Pole Position (Turkey 2020)</li>
+                <li class="flex items-center gap-2">💼 1 Team-owning Father</li>
+            </ul>
+        </div>
+        <button id="checkAgainBtn" class="mt-8 px-8 py-4 bg-lime text-[#00665e] font-bold rounded-full hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(206,220,0,0.4)] hover:shadow-[0_0_30px_rgba(255,255,255,0.6)] transform hover:-translate-y-1">
+            Check Again
+        </button>
+
+    </div>
+    <footer> 
+    </footer>
+
+    <script>
+        document.getElementById('checkAgainBtn').addEventListener('click', function() {
+            const answer = document.getElementById('answer');
+            const btn = this;
+            
+            answer.classList.remove('shake-active');
+            
+            void answer.offsetWidth;
+
+            answer.classList.add('shake-active');
+            
+            const originalText = btn.innerText;
+            btn.innerText = "Still No.";
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
