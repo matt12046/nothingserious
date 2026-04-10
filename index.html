@@ -36,32 +36,34 @@
     </style>
     <script data-goatcounter="https://didstrollwin.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
+    <!-- Add Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-6 text-center">
 
     <div class="max-w-2xl w-full flex flex-col items-center space-y-8">
         
-        <h2 class="text-xl md:text-3xl font-light uppercase tracking-widest text-gray-200">
+        <h2 id="top-question" class="text-xl md:text-3xl font-light uppercase tracking-widest text-gray-200">
             Has Lance Stroll won an F1 race?
         </h2>
 
         <!-- The Big Answer -->
-        <h1 id="answer" class="text-9xl md:text-[12rem] font-black tracking-tighter drop-shadow-2xl text-lime leading-none">
+        <h1 id="answer" class="text-9xl md:text-[12rem] font-black tracking-tighter drop-shadow-2xl text-lime leading-none transition-colors duration-500">
             NO.
         </h1>
 
         <!-- Context & Stats -->
         <div class="space-y-4 mt-8 bg-white/10 p-6 md:p-8 rounded-2xl backdrop-blur-sm shadow-xl w-full max-w-md border border-white/20">
             <p class="text-lg md:text-xl font-medium">
-                As of the 2026 season, Lance Stroll has exactly <span class="font-bold text-lime">0</span> Grand Prix victories.
+                As of the <span id="current-year">2026</span> season, Lance Stroll has exactly <span id="win-counter" class="font-bold text-lime">0</span> Grand Prix victories.
             </p>
             <div class="h-px w-full bg-white/20 my-4"></div>
             <p class="text-sm md:text-base text-gray-300">
-                However, in his 190+ race starts, he has achieved:
+                However, in his <span id="starts-counter">192</span> race starts, he has achieved:
             </p>
             <ul class="text-left w-max mx-auto space-y-2 text-sm md:text-base font-semibold">
-                <li class="flex items-center gap-2">🏆 3 Podiums</li>
-                <li class="flex items-center gap-2">⏱️ 1 Pole Position (Turkey 2020)</li>
+                <li class="flex items-center gap-2">🏆 <span id="podium-counter">3</span> Podiums</li>
+                <li id="pole-container" class="flex items-center gap-2">⏱️ <span id="pole-counter">1</span> Pole Position (Turkey 2020)</li>
                 <li class="flex items-center gap-2">💼 1 Team-owning Father</li>
             </ul>
         </div>
@@ -74,14 +76,13 @@
     </footer>
 
     <script>
+        // Existing Button Shake Logic
         document.getElementById('checkAgainBtn').addEventListener('click', function() {
             const answer = document.getElementById('answer');
             const btn = this;
             
             answer.classList.remove('shake-active');
-            
-            void answer.offsetWidth;
-
+            void answer.offsetWidth; // Trigger reflow
             answer.classList.add('shake-active');
             
             const originalText = btn.innerText;
@@ -91,6 +92,86 @@
                 btn.innerText = originalText;
             }, 1500);
         });
+
+        // New Live Data Fetch Logic
+        async function fetchLiveStrollStats() {
+            try {
+                // We use Jolpica (the community replacement for the Ergast API) 
+                // We fetch starts, 1st place finishes, 2nd place finishes, 3rd place finishes, and poles all at once
+                const endpoints = [
+                    'https://api.jolpi.ca/ergast/f1/drivers/stroll/results.json?limit=1',      // Total Starts
+                    'https://api.jolpi.ca/ergast/f1/drivers/stroll/results/1.json?limit=1',    // Wins (P1)
+                    'https://api.jolpi.ca/ergast/f1/drivers/stroll/results/2.json?limit=1',    // P2 Finishes
+                    'https://api.jolpi.ca/ergast/f1/drivers/stroll/results/3.json?limit=1',    // P3 Finishes
+                    'https://api.jolpi.ca/ergast/f1/drivers/stroll/qualifying/1.json?limit=1'  // Poles
+                ];
+
+                // Fire all API requests simultaneously for maximum speed
+                const responses = await Promise.all(endpoints.map(url => fetch(url)));
+                const data = await Promise.all(responses.map(res => res.json()));
+
+                // Extract totals from the JSON responses
+                const totalStarts = parseInt(data[0].MRData.total);
+                const wins = parseInt(data[1].MRData.total);
+                const p2 = parseInt(data[2].MRData.total);
+                const p3 = parseInt(data[3].MRData.total);
+                const podiums = wins + p2 + p3;
+                const poles = parseInt(data[4].MRData.total);
+
+                // Update the DOM dynamically
+                document.getElementById('current-year').innerText = new Date().getFullYear();
+                document.getElementById('starts-counter').innerText = totalStarts;
+                document.getElementById('win-counter').innerText = wins;
+                document.getElementById('podium-counter').innerText = podiums;
+                
+                // Adjust pole text in case he ever gets another one
+                if (poles > 1) {
+                    document.getElementById('pole-container').innerHTML = `⏱️ ${poles} Pole Positions`;
+                }
+
+                // The contingency plan: If a miracle happens and he wins a race...
+                if (wins > 0) {
+                    const answerEl = document.getElementById('answer');
+                    answerEl.innerText = "YES.";
+                    answerEl.classList.remove('text-lime');
+                    answerEl.classList.add('text-yellow-400'); // Turn it Gold
+                    
+                    document.getElementById('top-question').innerText = "HELL HAS FROZEN OVER.";
+                    document.getElementById('top-question').classList.add('font-bold', 'text-yellow-400');
+
+                    // Hide the joke button
+                    document.getElementById('checkAgainBtn').style.display = 'none'; 
+                    
+                    // Fire continuous confetti
+                    var duration = 15 * 1000;
+                    var animationEnd = Date.now() + duration;
+                    var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+                    function randomInRange(min, max) {
+                      return Math.random() * (max - min) + min;
+                    }
+
+                    var interval = setInterval(function() {
+                      var timeLeft = animationEnd - Date.now();
+                      if (timeLeft <= 0) { return clearInterval(interval); }
+                      var particleCount = 50 * (timeLeft / duration);
+                      confetti(Object.assign({}, defaults, { particleCount,
+                        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+                      }));
+                      confetti(Object.assign({}, defaults, { particleCount,
+                        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+                      }));
+                    }, 250);
+                }
+
+            } catch (error) {
+                console.error("Failed to load live F1 data, falling back to static text:", error);
+                // If the API fails or is blocked by an aggressive privacy shield, 
+                // the site just keeps showing the hardcoded HTML fallback values.
+            }
+        }
+
+        fetchLiveStrollStats();
     </script>
 </body>
 </html>
