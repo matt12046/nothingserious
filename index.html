@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Has Lance Stroll Won An F1 Race?</title>
+    <!-- Descriptions are rewritten weekly by scripts/update-stats.mjs -->
+    <meta name="description" content="No. As of September 2026, Lance Stroll has 0 F1 wins from 205 Grand Prix starts, plus 3 podiums and 100 Q1 knockouts. Updated weekly.">
+    <link rel="canonical" href="https://didstrollwin.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://didstrollwin.com/">
+    <meta property="og:title" content="Has Lance Stroll Won An F1 Race?">
+    <meta property="og:description" content="No. As of September 2026, Lance Stroll has 0 F1 wins from 205 Grand Prix starts, plus 3 podiums and 100 Q1 knockouts. Updated weekly.">
+    <meta property="og:image" content="https://didstrollwin.com/images/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Has Lance Stroll won an F1 race? NO.">
+    <meta name="twitter:card" content="summary_large_image">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -59,12 +71,12 @@
             </p>
             <div class="h-px w-full bg-white/20 my-4"></div>
             <p class="text-sm md:text-base text-gray-300">
-                However, in his <span id="starts-counter">192</span> race starts, he has achieved:
+                However, in his <span id="starts-counter">205</span> race starts, he has achieved:
             </p>
             <ul class="text-left w-max mx-auto space-y-2 text-sm md:text-base font-semibold">
                 <li class="flex items-center gap-2">🏆 <span id="podium-counter">3</span> Podiums</li>
                 <li id="pole-container" class="flex items-center gap-2">⏱️ <span id="pole-counter">1</span> Pole Position (Turkey 2020)</li>
-                <li id="q1-container" class="hidden items-center gap-2">🚪 <span id="q1-counter"></span> Q1 Knockouts</li>
+                <li id="q1-container" class="flex items-center gap-2">🚪 <span id="q1-counter">100</span> Q1 Knockouts</li>
                 <li class="flex items-center gap-2">💸 Crash damage: classified (Dad's paying)</li>
                 <li class="flex items-center gap-2">💼 1 Team-owning Father</li>
             </ul>
@@ -83,7 +95,7 @@
                 ETH: <span id="wallet-address">0x4eb630f433A5533Ca9BeC7DbC2ECeF5Fe3Ee18bE</span>
             </button>
         </div>
-        <p id="stats-updated" class="mt-8 text-xs text-white/50"></p>
+        <p id="stats-updated" class="mt-8 text-xs text-white/50">Stats last checked 2026-09-24</p>
     </footer>
 
     <!-- Rewritten weekly by scripts/update-stats.mjs; no need to edit by hand -->
@@ -134,7 +146,7 @@
             }
             const { starts, wins, podiums, poles, q1Knockouts, updated } = stats;
 
-            document.getElementById('current-year').innerText = new Date().getFullYear();
+            if (updated) document.getElementById('current-year').innerText = updated.slice(0, 4);
             document.getElementById('starts-counter').innerText = starts;
             document.getElementById('win-counter').innerText = wins;
             document.getElementById('podium-counter').innerText = podiums;
