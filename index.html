@@ -64,6 +64,7 @@
             <ul class="text-left w-max mx-auto space-y-2 text-sm md:text-base font-semibold">
                 <li class="flex items-center gap-2">🏆 <span id="podium-counter">3</span> Podiums</li>
                 <li id="pole-container" class="flex items-center gap-2">⏱️ <span id="pole-counter">1</span> Pole Position (Turkey 2020)</li>
+                <li id="q1-container" class="hidden items-center gap-2">🚪 <span id="q1-counter"></span> Q1 Knockouts</li>
                 <li class="flex items-center gap-2">💼 1 Team-owning Father</li>
             </ul>
         </div>
@@ -171,6 +172,31 @@
                       }));
                     }, 250);
                 }
+
+                // Q1 knockouts: qualifying entries with no Q2 time. There's no total for this,
+                // so page through every qualifying result (Jolpica caps limit at 100).
+                const qualifyingUrl = 'https://api.jolpi.ca/ergast/f1/drivers/stroll/qualifying.json?limit=100';
+                let q1Knockouts = 0;
+                let offset = 0;
+                let total = Infinity;
+                while (offset < total) {
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    const res = await fetch(`${qualifyingUrl}&offset=${offset}`);
+                    if (!res.ok) throw new Error(`HTTP ${res.status} for ${qualifyingUrl}`);
+                    const json = await res.json();
+                    total = parseInt(json.MRData.total);
+                    const races = json.MRData.RaceTable.Races;
+                    if (Number.isNaN(total) || races.length === 0) break;
+                    for (const race of races) {
+                        const result = race.QualifyingResults[0];
+                        if (result && !result.Q2) q1Knockouts++;
+                    }
+                    offset += races.length;
+                }
+                document.getElementById('q1-counter').innerText = q1Knockouts;
+                const q1Container = document.getElementById('q1-container');
+                q1Container.classList.remove('hidden');
+                q1Container.classList.add('flex');
 
             } catch (error) {
                 console.error("Failed to load live F1 data, falling back to static text:", error);
