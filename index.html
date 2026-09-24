@@ -97,7 +97,7 @@
         async function fetchLiveStrollStats() {
             try {
                 // We use Jolpica (the community replacement for the Ergast API) 
-                // We fetch starts, 1st place finishes, 2nd place finishes, 3rd place finishes, and poles all at once
+                // We fetch starts, 1st place finishes, 2nd place finishes, 3rd place finishes, and poles
                 const endpoints = [
                     'https://api.jolpi.ca/ergast/f1/drivers/stroll/results.json?limit=1',      // Total Starts
                     'https://api.jolpi.ca/ergast/f1/drivers/stroll/results/1.json?limit=1',    // Wins (P1)
@@ -106,24 +106,32 @@
                     'https://api.jolpi.ca/ergast/f1/drivers/stroll/qualifying/1.json?limit=1'  // Poles
                 ];
 
-                // Fire all API requests simultaneously for maximum speed
-                const responses = await Promise.all(endpoints.map(url => fetch(url)));
-                const data = await Promise.all(responses.map(res => res.json()));
+                // Jolpica allows only 4 requests/second, so firing all 5 at once gets one
+                // throttled (HTTP 429) and nothing updates. Fetch them one at a time, spaced out.
+                const fetchTotal = async (url, delayMs) => {
+                    await new Promise(resolve => setTimeout(resolve, delayMs));
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+                    const json = await res.json();
+                    const total = parseInt(json.MRData.total);
+                    if (Number.isNaN(total)) throw new Error(`Bad total for ${url}`);
+                    return total;
+                };
 
-                // Extract totals from the JSON responses
-                const totalStarts = parseInt(data[0].MRData.total);
-                const wins = parseInt(data[1].MRData.total);
-                const p2 = parseInt(data[2].MRData.total);
-                const p3 = parseInt(data[3].MRData.total);
-                const podiums = wins + p2 + p3;
-                const poles = parseInt(data[4].MRData.total);
-
-                // Update the DOM dynamically
                 document.getElementById('current-year').innerText = new Date().getFullYear();
+
+                // Starts first so the most visible number updates as soon as possible
+                const totalStarts = await fetchTotal(endpoints[0], 0);
                 document.getElementById('starts-counter').innerText = totalStarts;
+
+                const wins = await fetchTotal(endpoints[1], 300);
                 document.getElementById('win-counter').innerText = wins;
-                document.getElementById('podium-counter').innerText = podiums;
-                
+
+                const p2 = await fetchTotal(endpoints[2], 300);
+                const p3 = await fetchTotal(endpoints[3], 300);
+                document.getElementById('podium-counter').innerText = wins + p2 + p3;
+
+                const poles = await fetchTotal(endpoints[4], 300);
                 // Adjust pole text in case he ever gets another one
                 if (poles > 1) {
                     document.getElementById('pole-container').innerHTML = `⏱️ ${poles} Pole Positions`;
