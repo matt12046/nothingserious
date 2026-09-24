@@ -45,7 +45,7 @@
             animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
         }
 
-        /* Tip jar reveal after the second "Check Again" */
+        /* Tip jar reveal after the first "Check Again" */
         @keyframes tip-jar-in {
             from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
@@ -94,7 +94,7 @@
             Check Again
         </button>
 
-        <!-- Tip jar: revealed after the second "Check Again" press -->
+        <!-- Tip jar: revealed after the first "Check Again" press -->
         <div id="tip-jar" class="hidden flex-col items-center gap-3" aria-live="polite">
             <p class="text-sm text-gray-200">Still hoping? Help fund Lance's first win. (It's going to take a lot.)</p>
             <img src="images/eth-wallet-qr.svg" alt="QR code for Ethereum wallet 0x4eb630f433A5533Ca9BeC7DbC2ECeF5Fe3Ee18bE" width="120" height="120" loading="lazy" decoding="async" class="rounded-xl bg-white p-2 shadow-xl">
@@ -138,7 +138,14 @@
     <!-- Rewritten weekly by scripts/update-stats.mjs; no need to edit by hand -->
     <script id="stroll-stats" type="application/json">{"starts":205,"wins":0,"p2":0,"p3":3,"podiums":3,"poles":1,"q1Knockouts":100,"qualifyingSessions":204,"updated":"2026-09-24"}</script>
     <script>
-        // "Check Again": shake the answer, and reveal the tip jar on the second press
+        // Count an event in GoatCounter. Does nothing if its script is blocked or hasn't loaded yet.
+        function trackEvent(path, title) {
+            if (window.goatcounter && window.goatcounter.count) {
+                window.goatcounter.count({ path: path, title: title, event: true });
+            }
+        }
+
+        // "Check Again": shake the answer, and reveal the tip jar on the first press
         const checkAgainBtn = document.getElementById('checkAgainBtn');
         const checkAgainLabel = checkAgainBtn.innerText;
         let checkAgainPresses = 0;
@@ -158,7 +165,9 @@
             }, 1500);
 
             checkAgainPresses++;
-            if (checkAgainPresses === 2) {
+            if (checkAgainPresses === 1) {
+                // Counted once per visit, so it also means "saw the tip jar"
+                trackEvent('check-again', 'Pressed Check Again (tip jar shown)');
                 const tipJar = document.getElementById('tip-jar');
                 tipJar.classList.remove('hidden');
                 tipJar.classList.add('flex', 'tip-jar-reveal');
@@ -174,6 +183,7 @@
             try {
                 await navigator.clipboard.writeText(address);
                 btn.innerText = "Copied! Lance thanks you.";
+                trackEvent('wallet-copied', 'Copied the wallet address');
             } catch (error) {
                 btn.innerText = "Couldn't copy, select the address instead.";
             }
