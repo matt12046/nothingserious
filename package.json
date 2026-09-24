@@ -1,0 +1,11 @@
+{
+  "name": "didstrollwin",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i src/input.css -o styles.css --minify",
+    "update-stats": "node scripts/update-stats.mjs"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}

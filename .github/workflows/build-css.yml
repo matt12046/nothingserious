@@ -1,9 +1,16 @@
-name: Update Stroll stats
+name: Build CSS
 
+# Rebuilds styles.css whenever the page or Tailwind setup changes, so any
+# Tailwind class added to index.html (even from GitHub's web editor) gets styled.
 on:
-  schedule:
-    # Tuesdays 06:17 UTC, giving Jolpica time to load the weekend's results
-    - cron: '17 6 * * 2'
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - src/input.css
+      - tailwind.config.js
+      - package.json
+      - package-lock.json
   workflow_dispatch:
 
 permissions:
@@ -11,7 +18,7 @@ permissions:
   pages: write
 
 jobs:
-  update:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -19,25 +26,24 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
+          cache: npm
 
-      - name: Fetch stats and update index.html
-        run: node scripts/update-stats.mjs
+      - run: npm ci
 
-      # The "updated" date changes every run, so this commits weekly. That also
-      # keeps GitHub from disabling the schedule during the off-season.
+      - run: npm run build:css
+
       - name: Commit and push
         id: commit
         run: |
-          if git diff --quiet; then echo "Nothing changed"; exit 0; fi
+          if git diff --quiet; then echo "styles.css already up to date"; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898341+github-actions[bot]@users.noreply.github.com"
-          git commit -am "Update Stroll stats"
+          git commit -am "Rebuild styles.css"
           git push
           echo "pushed=true" >> "$GITHUB_OUTPUT"
 
-      # Pushes made with the workflow token may not kick off a Pages build on their own
       - name: Request Pages rebuild
-        if: steps.commit.outputs.pushed == 'true' && github.ref == 'refs/heads/main'
+        if: steps.commit.outputs.pushed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh api -X POST "repos/${{ github.repository }}/pages/builds" || echo "Pages rebuild request failed; the push may still trigger one"
