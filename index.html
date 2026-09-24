@@ -74,9 +74,12 @@
         </button>
 
     </div>
-    <footer> 
+    <footer>
+        <p id="stats-updated" class="mt-8 text-xs text-white/50"></p>
     </footer>
 
+    <!-- Rewritten weekly by scripts/update-stats.mjs; no need to edit by hand -->
+    <script id="stroll-stats" type="application/json">{"starts":192,"wins":0,"podiums":3,"poles":1,"q1Knockouts":null,"updated":null}</script>
     <script>
         // Existing Button Shake Logic
         document.getElementById('checkAgainBtn').addEventListener('click', function() {
@@ -95,118 +98,76 @@
             }, 1500);
         });
 
-        // New Live Data Fetch Logic
-        async function fetchLiveStrollStats() {
+        // Stats are fetched weekly by .github/workflows/update-stats.yml and baked into
+        // the stroll-stats block above, so visitors never have to wait on the API.
+        function renderStrollStats() {
+            let stats;
             try {
-                // We use Jolpica (the community replacement for the Ergast API) 
-                // We fetch starts, 1st place finishes, 2nd place finishes, 3rd place finishes, and poles
-                const endpoints = [
-                    'https://api.jolpi.ca/ergast/f1/drivers/stroll/results.json?limit=1',      // Total Starts
-                    'https://api.jolpi.ca/ergast/f1/drivers/stroll/results/1.json?limit=1',    // Wins (P1)
-                    'https://api.jolpi.ca/ergast/f1/drivers/stroll/results/2.json?limit=1',    // P2 Finishes
-                    'https://api.jolpi.ca/ergast/f1/drivers/stroll/results/3.json?limit=1',    // P3 Finishes
-                    'https://api.jolpi.ca/ergast/f1/drivers/stroll/qualifying/1.json?limit=1'  // Poles
-                ];
+                stats = JSON.parse(document.getElementById('stroll-stats').textContent);
+            } catch (error) {
+                console.error("Couldn't read baked-in stats, keeping the HTML defaults:", error);
+                return;
+            }
+            const { starts, wins, podiums, poles, q1Knockouts, updated } = stats;
 
-                // Jolpica allows only 4 requests/second, so firing all 5 at once gets one
-                // throttled (HTTP 429) and nothing updates. Fetch them one at a time, spaced out.
-                const fetchTotal = async (url, delayMs) => {
-                    await new Promise(resolve => setTimeout(resolve, delayMs));
-                    const res = await fetch(url);
-                    if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-                    const json = await res.json();
-                    const total = parseInt(json.MRData.total);
-                    if (Number.isNaN(total)) throw new Error(`Bad total for ${url}`);
-                    return total;
-                };
+            document.getElementById('current-year').innerText = new Date().getFullYear();
+            document.getElementById('starts-counter').innerText = starts;
+            document.getElementById('win-counter').innerText = wins;
+            document.getElementById('podium-counter').innerText = podiums;
 
-                document.getElementById('current-year').innerText = new Date().getFullYear();
+            // Adjust pole text in case he ever gets another one
+            if (poles > 1) {
+                document.getElementById('pole-container').innerHTML = `⏱️ ${poles} Pole Positions`;
+            }
 
-                // Starts first so the most visible number updates as soon as possible
-                const totalStarts = await fetchTotal(endpoints[0], 0);
-                document.getElementById('starts-counter').innerText = totalStarts;
-
-                const wins = await fetchTotal(endpoints[1], 300);
-                document.getElementById('win-counter').innerText = wins;
-
-                const p2 = await fetchTotal(endpoints[2], 300);
-                const p3 = await fetchTotal(endpoints[3], 300);
-                document.getElementById('podium-counter').innerText = wins + p2 + p3;
-
-                const poles = await fetchTotal(endpoints[4], 300);
-                // Adjust pole text in case he ever gets another one
-                if (poles > 1) {
-                    document.getElementById('pole-container').innerHTML = `⏱️ ${poles} Pole Positions`;
-                }
-
-                // The contingency plan: If a miracle happens and he wins a race...
-                if (wins > 0) {
-                    const answerEl = document.getElementById('answer');
-                    answerEl.innerText = "YES.";
-                    answerEl.classList.remove('text-lime');
-                    answerEl.classList.add('text-yellow-400'); // Turn it Gold
-                    
-                    document.getElementById('top-question').innerText = "HELL HAS FROZEN OVER.";
-                    document.getElementById('top-question').classList.add('font-bold', 'text-yellow-400');
-
-                    // Hide the joke button
-                    document.getElementById('checkAgainBtn').style.display = 'none'; 
-                    
-                    // Fire continuous confetti
-                    var duration = 15 * 1000;
-                    var animationEnd = Date.now() + duration;
-                    var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
-                    function randomInRange(min, max) {
-                      return Math.random() * (max - min) + min;
-                    }
-
-                    var interval = setInterval(function() {
-                      var timeLeft = animationEnd - Date.now();
-                      if (timeLeft <= 0) { return clearInterval(interval); }
-                      var particleCount = 50 * (timeLeft / duration);
-                      confetti(Object.assign({}, defaults, { particleCount,
-                        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
-                      }));
-                      confetti(Object.assign({}, defaults, { particleCount,
-                        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
-                      }));
-                    }, 250);
-                }
-
-                // Q1 knockouts: qualifying entries with no Q2 time. There's no total for this,
-                // so page through every qualifying result (Jolpica caps limit at 100).
-                const qualifyingUrl = 'https://api.jolpi.ca/ergast/f1/drivers/stroll/qualifying.json?limit=100';
-                let q1Knockouts = 0;
-                let offset = 0;
-                let total = Infinity;
-                while (offset < total) {
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                    const res = await fetch(`${qualifyingUrl}&offset=${offset}`);
-                    if (!res.ok) throw new Error(`HTTP ${res.status} for ${qualifyingUrl}`);
-                    const json = await res.json();
-                    total = parseInt(json.MRData.total);
-                    const races = json.MRData.RaceTable.Races;
-                    if (Number.isNaN(total) || races.length === 0) break;
-                    for (const race of races) {
-                        const result = race.QualifyingResults[0];
-                        if (result && !result.Q2) q1Knockouts++;
-                    }
-                    offset += races.length;
-                }
+            if (typeof q1Knockouts === 'number') {
                 document.getElementById('q1-counter').innerText = q1Knockouts;
                 const q1Container = document.getElementById('q1-container');
                 q1Container.classList.remove('hidden');
                 q1Container.classList.add('flex');
+            }
 
-            } catch (error) {
-                console.error("Failed to load live F1 data, falling back to static text:", error);
-                // If the API fails or is blocked by an aggressive privacy shield, 
-                // the site just keeps showing the hardcoded HTML fallback values.
+            if (updated) {
+                document.getElementById('stats-updated').innerText = `Stats last checked ${updated}`;
+            }
+
+            // The contingency plan: If a miracle happens and he wins a race...
+            if (wins > 0) {
+                const answerEl = document.getElementById('answer');
+                answerEl.innerText = "YES.";
+                answerEl.classList.remove('text-lime');
+                answerEl.classList.add('text-yellow-400'); // Turn it Gold
+                
+                document.getElementById('top-question').innerText = "HELL HAS FROZEN OVER.";
+                document.getElementById('top-question').classList.add('font-bold', 'text-yellow-400');
+
+                // Hide the joke button
+                document.getElementById('checkAgainBtn').style.display = 'none'; 
+                
+                // Fire continuous confetti
+                var duration = 15 * 1000;
+                var animationEnd = Date.now() + duration;
+                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+                function randomInRange(min, max) {
+                  return Math.random() * (max - min) + min;
+                }
+
+                var interval = setInterval(function() {
+                  var timeLeft = animationEnd - Date.now();
+                  if (timeLeft <= 0) { return clearInterval(interval); }
+                  var particleCount = 50 * (timeLeft / duration);
+                  confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+                  }));
+                  confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+                  }));
+                }, 250);
             }
         }
 
-        fetchLiveStrollStats();
+        renderStrollStats();
     </script>
 </body>
 </html>
