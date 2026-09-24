@@ -74,7 +74,15 @@
         </button>
 
     </div>
-    <footer>
+    <footer class="flex flex-col items-center">
+        <!-- Tip jar -->
+        <div class="mt-16 flex flex-col items-center gap-3">
+            <p class="text-sm text-gray-200">Help fund Lance's first win. (It's going to take a lot.)</p>
+            <img src="images/eth-wallet-qr.svg" alt="QR code for Ethereum wallet 0x4eb630f433A5533Ca9BeC7DbC2ECeF5Fe3Ee18bE" width="160" height="160" class="rounded-xl bg-white p-2 shadow-xl">
+            <button id="copy-wallet" type="button" title="Copy wallet address" class="max-w-[16rem] break-all font-mono text-xs text-white/70 hover:text-lime transition-colors">
+                ETH: <span id="wallet-address">0x4eb630f433A5533Ca9BeC7DbC2ECeF5Fe3Ee18bE</span>
+            </button>
+        </div>
         <p id="stats-updated" class="mt-8 text-xs text-white/50"></p>
     </footer>
 
@@ -96,6 +104,22 @@
             setTimeout(() => {
                 btn.innerText = originalText;
             }, 1500);
+        });
+
+        // Tip jar: copy the wallet address on click
+        document.getElementById('copy-wallet').addEventListener('click', async function() {
+            const address = document.getElementById('wallet-address').innerText;
+            const btn = this;
+            const originalHTML = btn.innerHTML;
+            try {
+                await navigator.clipboard.writeText(address);
+                btn.innerText = "Copied! Lance thanks you.";
+            } catch (error) {
+                btn.innerText = "Couldn't copy, select the address instead.";
+            }
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+            }, 2000);
         });
 
         // Stats are fetched weekly by .github/workflows/update-stats.yml and baked into
