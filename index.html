@@ -3,20 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Has Lance Stroll Won An F1 Race?</title>
-    <!-- Descriptions are rewritten weekly by scripts/update-stats.mjs -->
+    <!-- Title, descriptions and structured data are rewritten weekly by scripts/update-stats.mjs -->
+    <title>Has Lance Stroll Ever Won an F1 Race? (No.)</title>
     <meta name="description" content="No. As of September 2026, Lance Stroll has 0 F1 wins from 205 Grand Prix starts, plus 3 podiums and 100 Q1 knockouts. Updated weekly.">
     <link rel="canonical" href="https://didstrollwin.com/">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://didstrollwin.com/">
-    <meta property="og:title" content="Has Lance Stroll Won An F1 Race?">
+    <meta property="og:title" content="Has Lance Stroll Ever Won an F1 Race? (No.)">
     <meta property="og:description" content="No. As of September 2026, Lance Stroll has 0 F1 wins from 205 Grand Prix starts, plus 3 podiums and 100 Q1 knockouts. Updated weekly.">
     <meta property="og:image" content="https://didstrollwin.com/images/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Has Lance Stroll won an F1 race? NO.">
     <meta name="twitter:card" content="summary_large_image">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="theme-color" content="#00665e">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <script id="structured-data" type="application/ld+json">{}</script>
+    <!-- Built from src/input.css by Tailwind (npm run build:css); rebuilt automatically on push -->
+    <link rel="stylesheet" href="/styles.css">
     <style>
         :root {
             --amr-green: #00665e;
@@ -27,13 +33,6 @@
             color: white;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        .text-lime {
-            color: var(--amr-lime);
-        }
-        .bg-lime {
-            background-color: var(--amr-lime);
-        }
-        
         /* Shake Animation for the button */
         @keyframes shake {
             0% { transform: translateX(0); }
@@ -48,21 +47,19 @@
     </style>
     <script data-goatcounter="https://didstrollwin.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
-    <!-- Add Confetti Library -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-6 text-center">
 
-    <div class="max-w-2xl w-full flex flex-col items-center space-y-8">
+    <main class="max-w-2xl w-full flex flex-col items-center space-y-8">
         
-        <h2 id="top-question" class="text-xl md:text-3xl font-light uppercase tracking-widest text-gray-200">
-            Has Lance Stroll won an F1 race?
-        </h2>
+        <h1 id="top-question" class="text-xl md:text-3xl font-light uppercase tracking-widest text-gray-200">
+            Has Lance Stroll ever won an F1 race?
+        </h1>
 
         <!-- The Big Answer -->
-        <h1 id="answer" class="text-9xl md:text-[12rem] font-black tracking-tighter drop-shadow-2xl text-lime leading-none transition-colors duration-500">
+        <p id="answer" class="text-9xl md:text-[12rem] font-black tracking-tighter drop-shadow-2xl text-lime leading-none transition-colors duration-500">
             NO.
-        </h1>
+        </p>
 
         <!-- Context & Stats -->
         <div class="space-y-4 mt-8 bg-white/10 p-6 md:p-8 rounded-2xl backdrop-blur-sm shadow-xl w-full max-w-md border border-white/20">
@@ -85,12 +82,39 @@
             Check Again
         </button>
 
-    </div>
+        <!-- Questions people actually search; answers are rewritten weekly by scripts/update-stats.mjs -->
+        <section id="faq" class="w-full max-w-md pt-8 text-left" aria-labelledby="faq-heading">
+            <h2 id="faq-heading" class="mb-6 text-center text-sm font-light uppercase tracking-widest text-gray-200">The Details</h2>
+            <div class="space-y-6">
+                <div>
+                    <h3 id="faq-q1" class="font-bold text-lime"></h3>
+                    <p id="faq-a1" class="mt-1 text-sm md:text-base text-gray-200"></p>
+                </div>
+                <div>
+                    <h3 id="faq-q2" class="font-bold text-lime"></h3>
+                    <p id="faq-a2" class="mt-1 text-sm md:text-base text-gray-200"></p>
+                </div>
+                <div>
+                    <h3 id="faq-q3" class="font-bold text-lime"></h3>
+                    <p id="faq-a3" class="mt-1 text-sm md:text-base text-gray-200"></p>
+                </div>
+                <div>
+                    <h3 id="faq-q4" class="font-bold text-lime"></h3>
+                    <p id="faq-a4" class="mt-1 text-sm md:text-base text-gray-200"></p>
+                </div>
+                <div>
+                    <h3 id="faq-q5" class="font-bold text-lime"></h3>
+                    <p id="faq-a5" class="mt-1 text-sm md:text-base text-gray-200"></p>
+                </div>
+            </div>
+        </section>
+
+    </main>
     <footer class="flex flex-col items-center">
         <!-- Tip jar -->
         <div class="mt-16 flex flex-col items-center gap-3">
             <p class="text-sm text-gray-200">Help fund Lance's first win. (It's going to take a lot.)</p>
-            <img src="images/eth-wallet-qr.svg" alt="QR code for Ethereum wallet 0x4eb630f433A5533Ca9BeC7DbC2ECeF5Fe3Ee18bE" width="160" height="160" class="rounded-xl bg-white p-2 shadow-xl">
+            <img src="images/eth-wallet-qr.svg" alt="QR code for Ethereum wallet 0x4eb630f433A5533Ca9BeC7DbC2ECeF5Fe3Ee18bE" width="160" height="160" loading="lazy" decoding="async" class="rounded-xl bg-white p-2 shadow-xl">
             <button id="copy-wallet" type="button" title="Copy wallet address" class="max-w-[16rem] break-all font-mono text-xs text-white/70 hover:text-lime transition-colors">
                 ETH: <span id="wallet-address">0x4eb630f433A5533Ca9BeC7DbC2ECeF5Fe3Ee18bE</span>
             </button>
@@ -180,27 +204,34 @@
                 // Hide the joke button
                 document.getElementById('checkAgainBtn').style.display = 'none'; 
                 
-                // Fire continuous confetti
-                var duration = 15 * 1000;
-                var animationEnd = Date.now() + duration;
-                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
-                function randomInRange(min, max) {
-                  return Math.random() * (max - min) + min;
-                }
-
-                var interval = setInterval(function() {
-                  var timeLeft = animationEnd - Date.now();
-                  if (timeLeft <= 0) { return clearInterval(interval); }
-                  var particleCount = 50 * (timeLeft / duration);
-                  confetti(Object.assign({}, defaults, { particleCount,
-                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
-                  }));
-                  confetti(Object.assign({}, defaults, { particleCount,
-                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
-                  }));
-                }, 250);
+                // Fire continuous confetti. The library is only downloaded if this ever runs.
+                const confettiScript = document.createElement('script');
+                confettiScript.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
+                confettiScript.onload = launchConfetti;
+                document.head.appendChild(confettiScript);
             }
+        }
+
+        function launchConfetti() {
+            var duration = 15 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+              return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+              var timeLeft = animationEnd - Date.now();
+              if (timeLeft <= 0) { return clearInterval(interval); }
+              var particleCount = 50 * (timeLeft / duration);
+              confetti(Object.assign({}, defaults, { particleCount,
+                origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+              }));
+              confetti(Object.assign({}, defaults, { particleCount,
+                origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+              }));
+            }, 250);
         }
 
         renderStrollStats();
