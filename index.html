@@ -44,6 +44,18 @@
         .shake-active {
             animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
         }
+
+        /* Tip jar reveal after the second "Check Again" */
+        @keyframes tip-jar-in {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tip-jar-reveal {
+            animation: tip-jar-in 0.5s ease-out both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tip-jar-reveal { animation: none; }
+        }
     </style>
     <script data-goatcounter="https://didstrollwin.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
@@ -82,6 +94,15 @@
             Check Again
         </button>
 
+        <!-- Tip jar: revealed after the second "Check Again" press -->
+        <div id="tip-jar" class="hidden flex-col items-center gap-3" aria-live="polite">
+            <p class="text-sm text-gray-200">Still hoping? Help fund Lance's first win. (It's going to take a lot.)</p>
+            <img src="images/eth-wallet-qr.svg" alt="QR code for Ethereum wallet 0x4eb630f433A5533Ca9BeC7DbC2ECeF5Fe3Ee18bE" width="120" height="120" loading="lazy" decoding="async" class="rounded-xl bg-white p-2 shadow-xl">
+            <button id="copy-wallet" type="button" title="Copy wallet address" class="max-w-[16rem] break-all font-mono text-xs text-white/70 hover:text-lime transition-colors">
+                ETH: <span id="wallet-address">0x4eb630f433A5533Ca9BeC7DbC2ECeF5Fe3Ee18bE</span>
+            </button>
+        </div>
+
         <!-- Questions people actually search; answers are rewritten weekly by scripts/update-stats.mjs -->
         <section id="faq" class="w-full max-w-md pt-8 text-left" aria-labelledby="faq-heading">
             <h2 id="faq-heading" class="mb-6 text-center text-sm font-light uppercase tracking-widest text-gray-200">The Details</h2>
@@ -111,35 +132,38 @@
 
     </main>
     <footer class="flex flex-col items-center">
-        <!-- Tip jar -->
-        <div class="mt-16 flex flex-col items-center gap-3">
-            <p class="text-sm text-gray-200">Help fund Lance's first win. (It's going to take a lot.)</p>
-            <img src="images/eth-wallet-qr.svg" alt="QR code for Ethereum wallet 0x4eb630f433A5533Ca9BeC7DbC2ECeF5Fe3Ee18bE" width="160" height="160" loading="lazy" decoding="async" class="rounded-xl bg-white p-2 shadow-xl">
-            <button id="copy-wallet" type="button" title="Copy wallet address" class="max-w-[16rem] break-all font-mono text-xs text-white/70 hover:text-lime transition-colors">
-                ETH: <span id="wallet-address">0x4eb630f433A5533Ca9BeC7DbC2ECeF5Fe3Ee18bE</span>
-            </button>
-        </div>
-        <p id="stats-updated" class="mt-8 text-xs text-white/50">Stats last checked 2026-09-24</p>
+        <p id="stats-updated" class="mt-16 text-xs text-white/50">Stats last checked 2026-09-24</p>
     </footer>
 
     <!-- Rewritten weekly by scripts/update-stats.mjs; no need to edit by hand -->
     <script id="stroll-stats" type="application/json">{"starts":205,"wins":0,"p2":0,"p3":3,"podiums":3,"poles":1,"q1Knockouts":100,"qualifyingSessions":204,"updated":"2026-09-24"}</script>
     <script>
-        // Existing Button Shake Logic
-        document.getElementById('checkAgainBtn').addEventListener('click', function() {
+        // "Check Again": shake the answer, and reveal the tip jar on the second press
+        const checkAgainBtn = document.getElementById('checkAgainBtn');
+        const checkAgainLabel = checkAgainBtn.innerText;
+        let checkAgainPresses = 0;
+        let checkAgainTimer;
+        checkAgainBtn.addEventListener('click', function() {
             const answer = document.getElementById('answer');
-            const btn = this;
             
             answer.classList.remove('shake-active');
             void answer.offsetWidth; // Trigger reflow
             answer.classList.add('shake-active');
             
-            const originalText = btn.innerText;
-            btn.innerText = "Still No.";
-            
-            setTimeout(() => {
-                btn.innerText = originalText;
+            // Label is captured once up front, so quick double presses can't get it stuck on "Still No."
+            checkAgainBtn.innerText = "Still No.";
+            clearTimeout(checkAgainTimer);
+            checkAgainTimer = setTimeout(() => {
+                checkAgainBtn.innerText = checkAgainLabel;
             }, 1500);
+
+            checkAgainPresses++;
+            if (checkAgainPresses === 2) {
+                const tipJar = document.getElementById('tip-jar');
+                tipJar.classList.remove('hidden');
+                tipJar.classList.add('flex', 'tip-jar-reveal');
+                tipJar.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
         });
 
         // Tip jar: copy the wallet address on click
